@@ -1,0 +1,74 @@
+.app {
+  max-width: 420px;
+  margin: 4rem auto;
+  padding: 0 1.5rem;
+  text-align: center;
+  font-family: system-ui, sans-serif;
+}
+
+.subtitle {
+  color: #666;
+  margin-bottom: 2rem;
+}
+
+button {
+  padding: 0.75rem 1.5rem;
+  font-size: 1rem;
+  border-radius: 8px;
+  border: none;
+  background: #2563eb;
+  color: white;
+  cursor: pointer;
+}
+
+button:disabled {
+  background: #94a3b8;
+  cursor: not-allowed;
+}
+
+.error {
+  color: #b91c1c;
+  margin-top: 1.5rem;
+}
+
+.result {
+  margin-top: 2rem;
+  padding: 1.5rem;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+}
+
+.aqi-value {
+  font-size: 2.5rem;
+  font-weight: 700;
+}
+
+.category {
+  font-weight: 600;
+  margin-bottom: 0.75rem;
+}
+
+.message {
+  color: #444;
+}
+
+.risk-low {
+  background: #ecfdf5;
+  border-color: #34d399;
+}
+
+.risk-moderate {
+  background: #fefce8;
+  border-color: #facc15;
+}
+
+.risk-high,
+.risk-very_high {
+  background: #fff7ed;
+  border-color: #fb923c;
+}
+
+.risk-severe {
+  background: #fef2f2;
+  border-color: #f87171;
+}

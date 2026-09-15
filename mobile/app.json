@@ -26,6 +26,13 @@
         {
           "locationWhenInUsePermission": "AirIntel uses your location to check the air quality and asthma risk nearby."
         }
+      ],
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/icon.png",
+          "color": "#2563eb"
+        }
       ]
     ]
   }

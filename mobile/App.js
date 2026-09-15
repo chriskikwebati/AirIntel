@@ -1,10 +1,14 @@
 import { useState } from "react";
 import { StatusBar } from "expo-status-bar";
+import Constants from "expo-constants";
 import * as Location from "expo-location";
+import * as Notifications from "expo-notifications";
 import {
   ActivityIndicator,
+  Platform,
   Pressable,
   StyleSheet,
+  Switch,
   Text,
   View,
 } from "react-native";
@@ -23,6 +27,9 @@ export default function App() {
   const [status, setStatus] = useState("idle");
   const [result, setResult] = useState(null);
   const [error, setError] = useState(null);
+  const [pushToken, setPushToken] = useState(null);
+  const [alertsBusy, setAlertsBusy] = useState(false);
+  const [alertsError, setAlertsError] = useState(null);
 
   const checkRisk = async () => {
     setStatus("loading");
@@ -52,6 +59,51 @@ export default function App() {
     } catch (err) {
       setError(err.message);
       setStatus("error");
+    }
+  };
+
+  const toggleAlerts = async (enabled) => {
+    setAlertsError(null);
+    setAlertsBusy(true);
+    try {
+      if (enabled) {
+        const { status: permissionStatus } = await Notifications.requestPermissionsAsync();
+        if (permissionStatus !== "granted") {
+          throw new Error("Permission to send notifications was denied.");
+        }
+
+        if (Platform.OS === "android") {
+          await Notifications.setNotificationChannelAsync("default", {
+            name: "Default",
+            importance: Notifications.AndroidImportance.MAX,
+          });
+        }
+
+        const projectId = Constants.expoConfig?.extra?.eas?.projectId;
+        const { data: token } = await Notifications.getExpoPushTokenAsync(
+          projectId ? { projectId } : undefined
+        );
+
+        const response = await fetch(`${API_BASE_URL}/api/alerts/register`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ push_token: token, lat: result.lat, lon: result.lon }),
+        });
+        if (!response.ok) throw new Error("Could not enable alerts");
+
+        setPushToken(token);
+      } else if (pushToken) {
+        await fetch(`${API_BASE_URL}/api/alerts/unregister`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ push_token: pushToken }),
+        });
+        setPushToken(null);
+      }
+    } catch (err) {
+      setAlertsError(err.message);
+    } finally {
+      setAlertsBusy(false);
     }
   };
 
@@ -88,6 +140,19 @@ export default function App() {
           <Text style={styles.message}>{result.message}</Text>
         </View>
       )}
+
+      {status === "done" && result && (
+        <View style={styles.alertsRow}>
+          <Text style={styles.alertsLabel}>Alert me about this location</Text>
+          {alertsBusy ? (
+            <ActivityIndicator />
+          ) : (
+            <Switch value={!!pushToken} onValueChange={toggleAlerts} />
+          )}
+        </View>
+      )}
+
+      {alertsError && <Text style={styles.error}>{alertsError}</Text>}
 
       <StatusBar style="auto" />
     </View>
@@ -151,5 +216,16 @@ const styles = StyleSheet.create({
   message: {
     color: "#444",
     textAlign: "center",
+  },
+  alertsRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    width: "100%",
+    marginTop: 20,
+  },
+  alertsLabel: {
+    fontSize: 15,
+    color: "#333",
   },
 });

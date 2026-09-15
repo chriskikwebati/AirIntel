@@ -1,0 +1,18 @@
+name: AQI alert check
+
+on:
+  schedule:
+    - cron: "*/30 * * * *"
+  workflow_dispatch: {}
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger backend alert check
+        run: |
+          curl -sf -X POST "${BACKEND_URL}/internal/alerts/check" \
+            -H "X-Alert-Secret: ${ALERT_CRON_SECRET}"
+        env:
+          BACKEND_URL: ${{ secrets.BACKEND_URL }}
+          ALERT_CRON_SECRET: ${{ secrets.ALERT_CRON_SECRET }}

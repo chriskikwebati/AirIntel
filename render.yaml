@@ -11,3 +11,7 @@ services:
         sync: false
       - key: ALLOWED_ORIGINS
         sync: false
+      - key: DATABASE_URL
+        sync: false
+      - key: ALERT_CRON_SECRET
+        sync: false

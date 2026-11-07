@@ -1,7 +1,7 @@
 import requests
 from sqlalchemy.orm import Session
 
-from .aqi_client import AirNowError, fetch_observations
+from .aqi_client import AirQualityError, fetch_observations
 from .models import Device
 from .risk import assess_asthma_risk
 
@@ -22,7 +22,7 @@ def run_alert_check(db: Session):
         try:
             observations = fetch_observations(device.lat, device.lon)
             risk = assess_asthma_risk(observations)
-        except (AirNowError, requests.RequestException):
+        except (AirQualityError, requests.RequestException):
             continue
 
         risk_level = risk["risk_level"]

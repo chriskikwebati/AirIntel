@@ -5,7 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
-from .aqi_client import AirNowError, fetch_observations
+from .aqi_client import AirQualityError, fetch_observations
 from .db import Base, engine, get_db
 from .models import Device
 from .push import run_alert_check
@@ -30,7 +30,7 @@ if engine:
 def get_aqi_risk(lat: float = Query(...), lon: float = Query(...)):
     try:
         observations = fetch_observations(lat, lon)
-    except AirNowError as e:
+    except AirQualityError as e:
         raise HTTPException(status_code=502, detail=str(e))
 
     risk = assess_asthma_risk(observations)

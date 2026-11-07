@@ -1,39 +1,42 @@
-import os
-
 import requests
-from dotenv import load_dotenv
 
-load_dotenv()
+OPEN_METEO_URL = "https://air-quality-api.open-meteo.com/v1/air-quality"
 
-AIRNOW_URL = "https://www.airnowapi.org/aq/observation/latLong/current/"
+POLLUTANTS = {
+    "us_aqi_pm2_5": "PM2.5",
+    "us_aqi_pm10": "PM10",
+    "us_aqi_ozone": "O3",
+    "us_aqi_nitrogen_dioxide": "NO2",
+    "us_aqi_sulphur_dioxide": "SO2",
+    "us_aqi_carbon_monoxide": "CO",
+}
 
 
-class AirNowError(Exception):
+class AirQualityError(Exception):
     pass
 
 
-def fetch_observations(lat, lon, distance=25):
-    api_key = os.getenv("AIRNOW_API_KEY")
-    if not api_key:
-        raise AirNowError("AIRNOW_API_KEY is not set")
-
+def fetch_observations(lat, lon):
     response = requests.get(
-        AIRNOW_URL,
+        OPEN_METEO_URL,
         params={
-            "format": "application/json",
             "latitude": lat,
             "longitude": lon,
-            "distance": distance,
-            "API_KEY": api_key,
+            "current": ",".join(POLLUTANTS),
         },
         timeout=10,
     )
 
     if response.status_code != 200:
-        raise AirNowError(f"AirNow API returned status {response.status_code}")
+        raise AirQualityError(f"Open-Meteo API returned status {response.status_code}")
 
-    observations = response.json()
+    current = response.json().get("current", {})
+    observations = [
+        {"aqi": current[field], "pollutant": name}
+        for field, name in POLLUTANTS.items()
+        if current.get(field) is not None
+    ]
     if not observations:
-        raise AirNowError("No AQI observations found near this location")
+        raise AirQualityError("No AQI observations found near this location")
 
     return observations

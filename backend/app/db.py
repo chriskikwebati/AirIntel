@@ -1,6 +1,7 @@
 import os
 
 from dotenv import load_dotenv
+from fastapi import HTTPException
 from sqlalchemy import create_engine
 from sqlalchemy.orm import declarative_base, sessionmaker
 
@@ -15,6 +16,8 @@ Base = declarative_base()
 
 
 def get_db():
+    if SessionLocal is None:
+        raise HTTPException(status_code=503, detail="Alerts database is not configured (DATABASE_URL unset)")
     db = SessionLocal()
     try:
         yield db

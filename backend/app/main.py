@@ -73,12 +73,14 @@ def unregister_alert(body: AlertUnregistration, db: Session = Depends(get_db)):
 
 
 @app.post("/internal/alerts/check")
-def check_alerts(
-    x_alert_secret: str = Header(default=None),
-    db: Session = Depends(get_db),
-):
-    if not x_alert_secret or x_alert_secret != os.getenv("ALERT_CRON_SECRET"):
+def check_alerts(x_alert_secret: str = Header(default=None)):
+    expected = os.getenv("ALERT_CRON_SECRET")
+    if not expected or x_alert_secret != expected:
         raise HTTPException(status_code=401, detail="Invalid alert secret")
 
-    run_alert_check(db)
+    db = next(get_db())
+    try:
+        run_alert_check(db)
+    finally:
+        db.close()
     return {"status": "checked"}

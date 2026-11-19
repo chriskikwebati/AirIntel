@@ -3,6 +3,14 @@ import "./App.css";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8000";
 
+const RISK_LABELS = {
+  low: "Low asthma risk",
+  moderate: "Moderate asthma risk",
+  high: "High asthma risk",
+  very_high: "Very high asthma risk",
+  severe: "Severe asthma risk",
+};
+
 function App() {
   const [status, setStatus] = useState("idle");
   const [result, setResult] = useState(null);
@@ -57,9 +65,13 @@ function App() {
 
       {status === "done" && result && (
         <div className={`result risk-${result.risk_level}`}>
+          <div className="risk-badge">{RISK_LABELS[result.risk_level] ?? result.risk_level}</div>
           <div className="aqi-value">AQI {result.aqi}</div>
           <div className="category">{result.category_name}</div>
           <p className="message">{result.message}</p>
+          {result.dominant_pollutant && (
+            <p className="pollutant">Main pollutant: {result.dominant_pollutant}</p>
+          )}
         </div>
       )}
     </div>

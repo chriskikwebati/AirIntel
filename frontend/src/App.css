@@ -7,7 +7,7 @@
 }
 
 .subtitle {
-  color: #666;
+  color: var(--text);
   margin-bottom: 2rem;
 }
 
@@ -27,20 +27,36 @@ button:disabled {
 }
 
 .error {
-  color: #b91c1c;
+  color: var(--error);
   margin-top: 1.5rem;
 }
 
+/* Each risk level sets its own background, border and text colors so the
+   card stays readable no matter what the page's text color is. */
 .result {
   margin-top: 2rem;
   padding: 1.5rem;
   border-radius: 12px;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--card-border);
+  background: var(--card-bg);
+  color: var(--card-text);
+}
+
+.risk-badge {
+  display: inline-block;
+  margin-bottom: 0.75rem;
+  padding: 0.2rem 0.7rem;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  background: var(--card-border);
+  color: var(--card-badge-text);
 }
 
 .aqi-value {
   font-size: 2.5rem;
   font-weight: 700;
+  line-height: 1.1;
 }
 
 .category {
@@ -49,26 +65,80 @@ button:disabled {
 }
 
 .message {
-  color: #444;
+  margin-bottom: 0.75rem;
+}
+
+.pollutant {
+  font-size: 0.9rem;
+  opacity: 0.85;
+}
+
+:root {
+  --error: #b91c1c;
 }
 
 .risk-low {
-  background: #ecfdf5;
-  border-color: #34d399;
+  --card-bg: #ecfdf5;
+  --card-border: #34d399;
+  --card-text: #064e3b;
+  --card-badge-text: #022c22;
 }
 
 .risk-moderate {
-  background: #fefce8;
-  border-color: #facc15;
+  --card-bg: #fefce8;
+  --card-border: #facc15;
+  --card-text: #713f12;
+  --card-badge-text: #422006;
 }
 
-.risk-high,
+.risk-high {
+  --card-bg: #fff7ed;
+  --card-border: #fb923c;
+  --card-text: #7c2d12;
+  --card-badge-text: #431407;
+}
+
 .risk-very_high {
-  background: #fff7ed;
-  border-color: #fb923c;
+  --card-bg: #fef2f2;
+  --card-border: #f87171;
+  --card-text: #7f1d1d;
+  --card-badge-text: #450a0a;
 }
 
 .risk-severe {
-  background: #fef2f2;
-  border-color: #f87171;
+  --card-bg: #faf5ff;
+  --card-border: #c084fc;
+  --card-text: #581c87;
+  --card-badge-text: #3b0764;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --error: #fca5a5;
+  }
+
+  .risk-low {
+    --card-bg: #052e22;
+    --card-text: #d1fae5;
+  }
+
+  .risk-moderate {
+    --card-bg: #3a2f05;
+    --card-text: #fef9c3;
+  }
+
+  .risk-high {
+    --card-bg: #431a07;
+    --card-text: #ffedd5;
+  }
+
+  .risk-very_high {
+    --card-bg: #450a0a;
+    --card-text: #fee2e2;
+  }
+
+  .risk-severe {
+    --card-bg: #2e1065;
+    --card-text: #f3e8ff;
+  }
 }

@@ -26,6 +26,11 @@ if engine:
     Base.metadata.create_all(bind=engine)
 
 
+@app.get("/healthz")
+def healthz():
+    return {"status": "ok"}
+
+
 @app.get("/api/aqi-risk")
 def get_aqi_risk(lat: float = Query(...), lon: float = Query(...)):
     try:

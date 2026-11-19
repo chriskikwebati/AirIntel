@@ -14,3 +14,5 @@ services:
         sync: false
       - key: ALERT_CRON_SECRET
         sync: false
+      - key: WAQI_TOKEN
+        sync: false

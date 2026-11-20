@@ -4,3 +4,6 @@ requests==2.34.2
 python-dotenv==1.2.3
 sqlalchemy==2.0.53
 psycopg2-binary==2.9.13
+alembic==1.20.1
+slowapi==0.1.10
+limits==5.8.0

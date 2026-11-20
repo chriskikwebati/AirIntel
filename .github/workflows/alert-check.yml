@@ -5,14 +5,31 @@ on:
     - cron: "*/30 * * * *"
   workflow_dispatch: {}
 
+permissions:
+  contents: read
+  issues: write
+
 jobs:
   check:
     runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
+      ISSUE_TITLE: "Push alert check failing"
     steps:
+      - uses: actions/checkout@v7
       - name: Trigger backend alert check
-        run: |
-          curl -sf -X POST "${BACKEND_URL}/internal/alerts/check" \
-            -H "X-Alert-Secret: ${ALERT_CRON_SECRET}"
         env:
           BACKEND_URL: ${{ secrets.BACKEND_URL }}
           ALERT_CRON_SECRET: ${{ secrets.ALERT_CRON_SECRET }}
+        run: |
+          # The response summarises the run (devices checked, alerts sent, failures).
+          set -o pipefail
+          curl -sS -f --retry 2 --retry-delay 20 --retry-all-errors --max-time 120 \
+            -X POST "${BACKEND_URL}/internal/alerts/check" \
+            -H "X-Alert-Secret: ${ALERT_CRON_SECRET}" 2>&1 | tee output.txt
+      - name: Open an issue
+        if: failure()
+        run: bash .github/scripts/incident.sh open "$ISSUE_TITLE" "$(tail -n 40 output.txt 2>/dev/null)"
+      - name: Close the issue if it was open
+        if: success()
+        run: bash .github/scripts/incident.sh resolve "$ISSUE_TITLE"

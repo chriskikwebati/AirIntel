@@ -1,0 +1,35 @@
+# Run the backend and a local Postgres with one command:
+#   docker compose up --build
+# The API is then on http://localhost:8000, with push alerts and stats working.
+
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: airintel
+      POSTGRES_PASSWORD: airintel
+      POSTGRES_DB: airintel
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U airintel -d airintel"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  backend:
+    build: ./backend
+    ports:
+      - "8000:8000"
+    environment:
+      DATABASE_URL: postgresql://airintel:airintel@db:5432/airintel
+      # Local-only value; the real secret lives in Render and GitHub Actions.
+      ALERT_CRON_SECRET: ${ALERT_CRON_SECRET:-local-dev-secret}
+      ALLOWED_ORIGINS: http://localhost:5173
+      WAQI_TOKEN: ${WAQI_TOKEN:-}
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  db-data:

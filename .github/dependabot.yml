@@ -1,0 +1,25 @@
+# Weekly pull requests for dependency updates; security fixes are raised as soon as they're published.
+# The mobile app is left out on purpose: Expo pins its packages to the SDK version, so they are
+# upgraded together with `npx expo install --fix` instead (see mobile/AGENTS.md).
+version: 2
+updates:
+  - package-ecosystem: pip
+    directory: /backend
+    schedule:
+      interval: weekly
+    groups:
+      backend:
+        patterns: ["*"]
+
+  - package-ecosystem: npm
+    directory: /frontend
+    schedule:
+      interval: weekly
+    groups:
+      frontend:
+        patterns: ["*"]
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly

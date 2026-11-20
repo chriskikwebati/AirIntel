@@ -5,16 +5,36 @@ on:
     - cron: "0 13 * * *"
   workflow_dispatch: {}
 
+permissions:
+  contents: read
+  issues: write
+
 jobs:
   check:
     runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
+      ISSUE_TITLE: "Live health check failing"
     steps:
+      - uses: actions/checkout@v7
       - name: Check live AQI endpoint returns a risk assessment
+        id: check
         env:
           BACKEND_URL: ${{ secrets.BACKEND_URL }}
         run: |
           # Free Render instances sleep, so allow a slow first response and retry.
-          body=$(curl -sf --retry 3 --retry-delay 20 --retry-all-errors --max-time 90 \
-            "${BACKEND_URL}/api/aqi-risk?lat=40.7&lon=-74.0")
-          echo "$body"
-          echo "$body" | jq -e '.risk_level and (.aqi | type == "number")' > /dev/null
+          # Output is saved so a failure can be attached to the issue.
+          set -o pipefail
+          {
+            body=$(curl -sS -f --retry 3 --retry-delay 20 --retry-all-errors --max-time 90 \
+              -D headers.txt "${BACKEND_URL}/api/aqi-risk?lat=40.7&lon=-74.0")
+            echo "$body"
+            grep -i '^x-request-id' headers.txt || true
+            echo "$body" | jq -e '.risk_level and (.aqi | type == "number")' > /dev/null
+          } 2>&1 | tee output.txt
+      - name: Open an issue
+        if: failure()
+        run: bash .github/scripts/incident.sh open "$ISSUE_TITLE" "$(tail -n 40 output.txt 2>/dev/null)"
+      - name: Close the issue if it was open
+        if: success()
+        run: bash .github/scripts/incident.sh resolve "$ISSUE_TITLE"
